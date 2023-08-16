@@ -1,6 +1,6 @@
 th 102075530647 4000 meli investmentAccount
 ns 102028223198 9000 meli investmentAccount
-ak 10203572305 2000 meli investmentAccountn
+ak 10203572305 2000 meli investmentAccount
 ak 603728551474 2000 melat investmentAccount
 rb 603787410660 5000 melat investmentAccount
 sh 603728613533 6000 melat freeProfitAccountn

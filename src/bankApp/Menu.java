@@ -138,9 +138,19 @@ public class Menu {
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         showAccountsList(userName);
         System.out.print("Enter Your Choice: ");
-        userInput.next();
+        Bank selectedBank = null;
+        switch (userInput.next()) {
+            case "1":
+                selectedBank = banks.get("meli");
+                selectedBank.MoneyTransfer(userName,"a",200000);
+                break;
+            case "2":
+                selectedBank = banks.get("melat");
+                break;
+            case "3":
+                selectedBank = banks.get("resalat");
+        }
 
-//        Bank selectedBank = null;
     }
 
     void showAccountsList(String userName) {

@@ -27,11 +27,7 @@ public class Bank {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        accountLoader();
-    }
-
-    {
-
+        loadAllAcount();
     }
 
 
@@ -64,18 +60,18 @@ public class Bank {
     }
 
 
-    public void accountLoader() {
+    public void loadAllAcount() {
         File directory = new File("C:\\Users\\user\\IdeaProjects\\Bank\\allAccount.txt");
         while (fileSccaner.hasNextLine()) {
             String data = fileSccaner.nextLine();
-
             // Load all account in one file
             try (FileWriter addAll = new FileWriter(directory, true)) {
-
                 addAll.write(data + "\n");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+            // load accounts of the bank
             Account allAccaount = stringToObject(data);
             accounts.add(allAccaount);
 
@@ -97,7 +93,23 @@ public class Bank {
 
     }
 
-    public void MoneyTransfer(String destinationCard, Integer amount) {
+    Account currentAccount;
+    public void MoneyTransfer(String curentUser, String destinationCard, Integer amount) {
+        Boolean flag = false;
+        int checkAmount=0;
+        for (Account account : accounts) {
+            if (account.userName.equals(curentUser)) {
+                flag = true;
+                currentAccount=account;
+                checkAmount=currentAccount.accountBalance-amount;
+                if (checkAmount>0){
+                    currentAccount.accountBalance-=amount;
+                }else{
+                    System.out.println("Not enough inventory!!!");
+                }
+                break;
+            }
+        }
 
     }
 
