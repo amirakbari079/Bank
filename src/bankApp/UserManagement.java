@@ -1,12 +1,17 @@
 package bankApp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Scanner;
+import java.util.*;
 
 public class UserManagement {
-    public boolean signUp(String userFirstName, String userLastName, String userName, String userInputNationalID, String userGender, String userInputPassword) {
+    File userDataFile = new File("C:\\Users\\user\\IdeaProjects\\Bank\\userData.txt");
+    Scanner fileScanner;
+
+
+    public void signUp(String userFirstName, String userLastName, String userName, String userInputNationalID, String userGender, String userInputPassword) {
         try (FileWriter userData = new FileWriter("userData.txt", true)) {
 
             // Check Duplicate User
@@ -25,38 +30,56 @@ public class UserManagement {
             Customer newUser = new Customer(userFirstName, userLastName, userName, userInputNationalID, userGender, userInputPassword);
 
             // Write The Data To Text File
-            userData.write(newUser.userName + " " + newUser.nationalID + " " + newUser.password + "-" + newUser.name + " " + newUser.lastName + " " + newUser.gender + "\n");
+            userData.write(newUser.name + " " + newUser.lastName + " " + newUser.userName + " " + newUser.nationalID + " " + newUser.gender + " " + newUser.password + "\n");
             System.out.println("Registration Has Been Successfully");
 
 
         } catch (IOException e) {
             System.out.println("This UserName Has Been Registered Before!");
-            Menu menu=new Menu();
+            Menu menu = new Menu();
             menu.firstMenu();
         }
-        return false;
     }
 
-    public boolean login(String userInputNationalID, String userInputPassword) {
+    public Boolean login(String inputUserName, String inputPassword) {
+        HashMap<String, Customer> allUser = getAllUser();
+        if (allUser.containsKey(inputUserName)) {
+            Customer user = allUser.get(inputUserName);
+            if (user.password.equals(inputPassword)) {
+                System.out.println(user.name + " Wellcome to your app");
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private HashMap<String, Customer> getAllUser() {
+
+        HashMap<String, Customer> output = new HashMap<>();
+
         try {
-            File userDataFile = new File("C:\\Users\\user\\IdeaProjects\\Bank\\userData.txt");
-            Scanner fileScanner = new Scanner(userDataFile);
+            fileScanner = new Scanner(userDataFile);
             while (fileScanner.hasNextLine()) {
                 String data = fileScanner.nextLine();
-                int indexOfSubstring = data.indexOf("-");
-                String checkUserPass = data.substring(0, indexOfSubstring);
-                if (checkUserPass.equals(userInputNationalID + " " + userInputPassword)) {
-                    String subTxt = data.substring(indexOfSubstring + 1, data.length());
-                    String name = subTxt.substring(0, subTxt.indexOf(" "));
-                    System.out.println(name + " Wellcome To Your Panel.");
-                    System.out.println(data);
-                }
-                ;
+                String[] accountArray = data.split(" ");
+
+                output.put(accountArray[2], new Customer(accountArray[0], accountArray[1], accountArray[2], accountArray[3], accountArray[4], accountArray[5]));
+
+
+                //accountDataList = Arrays.asList(accountArray);
+
+
             }
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
-        return false;
+
+        return output;
     }
+
+
 }
