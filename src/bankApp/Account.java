@@ -40,7 +40,7 @@ public abstract class Account {
 
     @Override
     public String toString() {
-        return userName + ' ' + accountNumber + ' ' + accountBalance + ' ' + bankName + ' ' + accountType+"n";
+        return userName + ' ' + accountNumber + ' ' + accountBalance + ' ' + bankName + ' ' + accountType;
     }
 
 

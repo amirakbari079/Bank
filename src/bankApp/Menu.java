@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Menu {
@@ -136,24 +137,36 @@ public class Menu {
 
     public void monyTransfer(String userName) {
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
-        showAccountsList(userName);
-        System.out.print("Enter Your Choice: ");
         Bank selectedBank = null;
-        switch (userInput.next()) {
-            case "1":
-                selectedBank = banks.get("meli");
-                selectedBank.MoneyTransfer(userName,"a",200000);
-                break;
-            case "2":
-                selectedBank = banks.get("melat");
-                break;
-            case "3":
-                selectedBank = banks.get("resalat");
+        Bank destinationBank = null;
+        String destinationCard, bankName;
+        Integer amount;
+
+        // show all account of the user
+
+        // select one account
+
+        String name=showAccountsList(userName);
+        selectedBank = banks.get(name);
+        System.out.print("Enter destination card: ");
+        destinationCard = userInput.next();
+        for (Map.Entry<String,Bank> entry : banks.entrySet()) {
+        if(entry.getValue().bankStartNumber.equals(destinationCard.substring(0,4)))
+            destinationBank=entry.getValue();
         }
+
+
+        System.out.print("Enter amount: ");
+        amount = Integer.parseInt(userInput.next());
+
+        if (destinationBank.moneyTransferDestinationBank(destinationCard, amount))
+            selectedBank.moneyTransferOriginBank(destinationCard, amount, userName);
+        else System.out.println("The desired card number does not exist");
+
 
     }
 
-    void showAccountsList(String userName) {
+    public String showAccountsList(String userName) {
         File directory = new File("C:\\Users\\user\\IdeaProjects\\Bank\\allAccount.txt");
         Scanner fileReader = null;
         try {
@@ -176,6 +189,14 @@ public class Menu {
             counter++;
             System.out.println(counter + "-" + account);
         }
+        System.out.print("Enter Your Choice: ");
+        int index;
+        String data = accountsOfUser.get(Integer.parseInt(userInput.next()) - 1);
+        index = data.indexOf(" ");
+        String bankName=data.substring(index+1);
+        return bankName;
+
     }
+
 }
 
