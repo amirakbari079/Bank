@@ -1,3 +1,4 @@
-th 603713241417 2200 melat investmentAccount
-ns 603734792673 12000 melat investmentAccount
-ak 603745643999 10500 melat investmentAccount
+th 603713241417 1700 melat investmentAccount
+ns 603734792673 5000 melat investmentAccount
+ak 603745643999 10800 melat investmentAccount
+mj 603787489430 1000 melat freeProfitAccount

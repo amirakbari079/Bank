@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Menu {
-    Scanner userInput = new Scanner(System.in);
+    Scanner scanner = new Scanner(System.in);
     String inputUserName;
     UserManagement userManagement = new UserManagement();
     BanksInitialization banInit = new BanksInitialization();
     HashMap<String, Bank> banks;
+    File directory = new File("C:\\Users\\user\\IdeaProjects\\Bank\\allAccount.txt");
 
     public void firstMenu() {
 
@@ -48,9 +49,9 @@ public class Menu {
 
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         System.out.print("Please Enter Your UserName: ");
-        inputUserName = userInput.nextLine();
+        inputUserName = scanner.nextLine();
         System.out.print("Please Enter Your password: ");
-        String inputPassword = userInput.nextLine();
+        String inputPassword = scanner.nextLine();
         if (userManagement.login(inputUserName, inputPassword))
             accountMenu(inputUserName);
         else {
@@ -62,41 +63,39 @@ public class Menu {
     public void signUpMenu() {
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         System.out.print("Please Enter Your Name: ");
-        String userFirstName = userInput.nextLine();
+        String userFirstName = scanner.nextLine();
         System.out.print("Please Enter Your LastName: ");
-        String userLastName = userInput.nextLine();
+        String userLastName = scanner.nextLine();
         System.out.print("Please Enter Your UserName: ");
-        String userName = userInput.nextLine();
+        String userName = scanner.nextLine();
         System.out.print("Please Enter Your NationalID: ");
-        String userInputNationalID = userInput.nextLine();
+        String userInputNationalID = scanner.nextLine();
         System.out.print("Please Enter Your Gender(Male/FeMale): ");
-        String userGender = userInput.nextLine();
+        String userGender = scanner.nextLine();
         System.out.print("Please Enter Your password: ");
-        String userInputPassword = userInput.nextLine();
+        String userInputPassword = scanner.nextLine();
 
         // Register A User
         userManagement.signUp(userFirstName, userLastName, userName, userInputNationalID, userGender, userInputPassword);
     }
 
     public void accountMenu(String userName) {
-
         banks = banInit.run();
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         System.out.println("1-Open a new account");
         System.out.println("2-Money transfer");
-        System.out.println("3-Receive a loan");
-        System.out.println("4-Balance");
+        System.out.println("3-Balance");
         System.out.print("Enter Your Choice: ");
 
-        switch (userInput.next()) {
+        switch (scanner.next()) {
             case "1":
                 openNewAccount();
                 break;
             case "2":
-                monyTransfer(userName);
+                moneyTransfer(userName);
                 break;
             case "3":
-                System.out.println("3");
+                accountBalance(userName);
                 break;
         }
 
@@ -104,77 +103,87 @@ public class Menu {
 
     public void openNewAccount() {
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
-        System.out.println("Enter your bank Name");
+        ArrayList<String> bankHolder = new ArrayList<>();
+        System.out.println("Choice your bank name");
         int counter = 0;
         for (Bank bank : banks.values()) {
             counter++;
             System.out.println(counter + "-" + bank.name);
+            bankHolder.add(bank.name);
         }
         System.out.print("Enter Your Choice: ");
         Bank selectedBank = null;
-        switch (userInput.next()) {
-            case "1":
-                selectedBank = banks.get("meli");
-                break;
-            case "2":
-                selectedBank = banks.get("melat");
-                break;
-            case "3":
-                selectedBank = banks.get("resalat");
-        }
+        int index=Integer.parseInt(scanner.next());
+        selectedBank=banks.get(bankHolder.get(index-1));
 
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         System.out.print("Enter your initial deposit :");
-        Integer accountBalance = Integer.parseInt(userInput.next());
+        Integer accountBalance = Integer.parseInt(scanner.next());
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         System.out.println("Enter your account type :");
         System.out.println("1-Free profit account");
         System.out.println("2-Investment account");
         System.out.print("Enter the name of your bank: ");
-        String accountType = userInput.next();
+        String accountType = scanner.next();
         selectedBank.openNewAccount(inputUserName, accountBalance, accountType);
     }
 
-    public void monyTransfer(String userName) {
+    Bank destinationBank = null;
+    String bankName;
+
+    public void moneyTransfer(String userName) {
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         Bank selectedBank = null;
-        Bank destinationBank = null;
-        String destinationCard, bankName;
+        String destinationCard;
         Integer amount;
-
-        // show all account of the user
-
-        // select one account
-
-        String name=showAccountsList(userName);
-        selectedBank = banks.get(name);
+        accountListHandler(userName);
+        selectedBank = banks.get(bankName);
         System.out.print("Enter destination card: ");
-        destinationCard = userInput.next();
-        for (Map.Entry<String,Bank> entry : banks.entrySet()) {
-        if(entry.getValue().bankStartNumber.equals(destinationCard.substring(0,4)))
-            destinationBank=entry.getValue();
-        }
-
-
+        destinationCard = scanner.next();
+        findDestinationAccount(destinationCard);
         System.out.print("Enter amount: ");
-        amount = Integer.parseInt(userInput.next());
+        amount = Integer.parseInt(scanner.next());
+        selectedBank.moneyTransfer(banks,destinationBank,userName,destinationCard,amount);
+    }
 
-        if (destinationBank.moneyTransferDestinationBank(destinationCard, amount))
-            selectedBank.moneyTransferOriginBank(destinationCard, amount, userName);
-        else System.out.println("The desired card number does not exist");
-
+    public void findDestinationAccount(String destinationCard) {
+        for (Map.Entry<String, Bank> entry : banks.entrySet()) {
+            if (entry.getValue().bankStartNumber.equals(destinationCard.substring(0, 4)))
+                destinationBank = entry.getValue();
+        }
 
     }
 
-    public String showAccountsList(String userName) {
-        File directory = new File("C:\\Users\\user\\IdeaProjects\\Bank\\allAccount.txt");
+    ArrayList<String> accountsOfUser = new ArrayList<>();
+    String cardNumber;
+
+    /**
+     * @param userName this method shows accounts of the user and then get the account that user want to do something with it
+     */
+    public void accountListHandler(String userName) {
+        findAccount(userName);
+        int counter = 0;
+        System.out.println("Select your bank account :");
+        for (String account : accountsOfUser) {
+            counter++;
+            System.out.println(counter + "-" + account);
+        }
+        System.out.print("Enter Your Choice: ");
+        int index;
+        String data = accountsOfUser.get(Integer.parseInt(scanner.next()) - 1);
+        index = data.indexOf(" ");
+        bankName = data.substring(index + 1);
+        cardNumber = data.substring(0, index - 1);
+    }
+
+
+    public void findAccount(String userName) {
         Scanner fileReader = null;
         try {
             fileReader = new Scanner(directory);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        ArrayList<String> accountsOfUser = new ArrayList<>();
 
         while (fileReader.hasNextLine()) {
             String data = fileReader.nextLine();
@@ -183,19 +192,24 @@ public class Menu {
                 accountsOfUser.add(splitData[1] + " " + splitData[3]);
             }
         }
-        int counter = 0;
-        System.out.println("Select your banck account :");
-        for (String account : accountsOfUser) {
-            counter++;
-            System.out.println(counter + "-" + account);
-        }
-        System.out.print("Enter Your Choice: ");
-        int index;
-        String data = accountsOfUser.get(Integer.parseInt(userInput.next()) - 1);
-        index = data.indexOf(" ");
-        String bankName=data.substring(index+1);
-        return bankName;
+    }
 
+    public void accountBalance(String userName) {
+        accountListHandler(userName);
+
+        Scanner fileReader = null;
+        try {
+            fileReader = new Scanner(directory);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        while (fileReader.hasNextLine()) {
+            String data = fileReader.nextLine();
+            if (data.contains(cardNumber)) {
+                String[] splitData = data.split(" ");
+                System.out.println("Your account balance is: " + splitData[2]);
+            }
+        }
     }
 
 }

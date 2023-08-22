@@ -5,29 +5,35 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Bank {
     String name, bankStartNumber;
     Integer moneyFee;
-    Account bankAccounts;
-    ArrayList<Account> accounts = new ArrayList<>();
+    ArrayList<Account> allAccount = new ArrayList<>();
+    ArrayList<Account> bankAccounts = new ArrayList<>();
     File path;
-    Scanner fileSccaner;
+    Scanner fileScanner;
 
 
     protected Bank(String name, Integer moneyFee, String bankStartNumber) {
         this.name = name;
         this.moneyFee = moneyFee;
         this.bankStartNumber = bankStartNumber;
-        path = new File("C:\\Users\\user\\IdeaProjects\\Bank\\" + name + "\\accountData.txt");
+        path = new File("" + name + "\\accountData.txt");
         try {
-            fileSccaner = new Scanner(path);
+            fileScanner = new Scanner(path);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        loadAllAcount();
+        initAccounts();
+        try {
+            loadAllAccount();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -39,11 +45,13 @@ public class Bank {
             case "1": {
                 accountType = "freeProfitAccount";
                 newAccount = new FreeProfitAccount(userName, cardNumber, accountBalance, name, accountType);
+                allAccount.add(newAccount);
                 break;
             }
             case "2": {
                 accountType = "investmentAccount";
                 newAccount = new InvestmentAccount(userName, cardNumber, accountBalance, name, accountType);
+                allAccount.add(newAccount);
                 break;
             }
         }
@@ -60,87 +68,113 @@ public class Bank {
     }
 
 
-    public void loadAllAcount() {
-        File directory = new File("C:\\Users\\user\\IdeaProjects\\Bank\\allAccount.txt");
 
+
+    public void initAccounts() {
+        File directory = new File("allAccount.txt");
+        String data;
         // Load current accounts of the bank
-        while (fileSccaner.hasNextLine()) {
-            String data = fileSccaner.nextLine();
+        while (fileScanner.hasNextLine()) {
+            data = fileScanner.nextLine();
             // Load all account in one file
             try (FileWriter addAll = new FileWriter(directory, true)) {
                 addAll.write(data + "\n");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-            // load accounts of the bank
-            Account allAccaount = stringToObject(data);
-            accounts.add(allAccaount);
+            bankAccounts.add(AccountManger.stringToObject(data));
 
         }
-
-
+        System.out.println("a");
     }
 
-    public Account stringToObject(String data) {
-        String[] account = data.split(" ");
-        Account newAccount;
-        switch (account[4]) {
-            case "freeProfitAccount":
-                return newAccount = new FreeProfitAccount(account[0], account[1], Integer.parseInt(account[2]), account[3], account[4]);
-            case "investmentAccount":
-                return newAccount = new InvestmentAccount(account[0], account[1], Integer.parseInt(account[2]), account[3], account[4]);
+    public void loadAllAccount() throws FileNotFoundException {
+        // load accounts of the bank
+        File path = new File("allAccount.txt");
+        fileScanner = new Scanner(path);
+        while (fileScanner.hasNextLine()) {
+            String data = fileScanner.nextLine();
+            Account tempAccount = AccountManger.stringToObject(data);
+            allAccount.add(tempAccount);
         }
-        return null;
-
     }
+
+//    public Account stringToObject(String data) {
+//        String[] account = data.split(" ");
+//        Account newAccount;
+//        switch (account[4]) {
+//            case "freeProfitAccount":
+//                return newAccount = new FreeProfitAccount(account[0], account[1], Integer.parseInt(account[2]), account[3], account[4]);
+//            case "investmentAccount":
+//                return newAccount = new InvestmentAccount(account[0], account[1], Integer.parseInt(account[2]), account[3], account[4]);
+//        }
+//        return null;
+//
+//    }
 
     Account currentAccount;
 
-    public void moneyTransfer(String curentUser, String destinationCard, String bankName, Integer amount) {
-        moneyTransferDestinationBank(destinationCard, amount);
-        moneyTransferOriginBank(destinationCard, amount, curentUser);
-
-
+    public void moneyTransfer(HashMap<String ,Bank> banks, Bank destinationBank, String currentUser, String destinationCard, Integer amount) {
+        if (isAccountExist(banks,destinationCard)) {
+            if (moneyTransferOriginBank(amount, currentUser))
+                destinationBank.moneyTransferDestinationBank(destinationCard, amount);
+        } else System.out.println("The desired card number does not exist");
     }
 
-    public Boolean moneyTransferDestinationBank(String destinationCard, Integer amount) {
+    int index;
+
+    private Boolean isAccountExist(HashMap<String ,Bank> banks,String destinationCard) {
+        int startNumber=Integer.parseInt(destinationCard.substring(0,4));
+        banks.forEach((key,value)->{
+            if (value.bankStartNumber.equals(startNumber)){
+                //do something
+                System.out.println("hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+            }
+        });
+//        for (Account destAccount : allAccount) {
+//            if (destAccount.accountNumber.equals(destinationCard)) {
+//                index = allAccount.indexOf(destAccount);
+//                return true;
+//            }
+//        }
+        return false;
+    }
+
+    public void moneyTransferDestinationBank(String destinationCard, Integer amount) {
         clearFile();
-        int index;
-        for (Account destAcaaount : accounts) {
-            if (destAcaaount.accountNumber.equals(destinationCard)) {
-                index = accounts.indexOf(destAcaaount);
-                accounts.get(index).accountBalance += amount;
+        for (Account destAccount : bankAccounts) {
+            if (destAccount.accountNumber.equals(destinationCard)) {
+                index = bankAccounts.indexOf(destAccount);
+
+                bankAccounts.get(index).accountBalance += amount;
                 try (FileWriter fileAccount = new FileWriter(path, true)) {
-                    loadAllAcount();
-                    for (Account account2 : accounts) {
+                    for (Account account2 : bankAccounts) {
                         fileAccount.write(account2.toString() + "\n");
                     }
-                    return true;
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
         }
-        return false;
     }
 
-    public void moneyTransferOriginBank(String destinationCard, Integer amount, String curentUser) {
+    public Boolean moneyTransferOriginBank(Integer amount, String currentUser) {
         int checkAmount = 0, index;
-        for (Account account : accounts) {
-            currentAccount = account;
-            checkAmount = currentAccount.accountBalance - amount;
-            if (account.userName.equals(curentUser)) {
+        for (Account account : bankAccounts) {
+
+            if (account.userName.equals(currentUser)) {
+                currentAccount = account;
+                moneyFee = (amount * moneyFee) / 100;
+                checkAmount = currentAccount.accountBalance - amount;
                 if (checkAmount < 0) {
                     System.out.println("Not enough inventory!!!");
-                    break;
+                    return false;
                 }
-
-                index = accounts.indexOf(currentAccount);
-                accounts.get(index).accountBalance -= amount;
+                index = bankAccounts.indexOf(currentAccount);
+                bankAccounts.get(index).accountBalance -= (amount + moneyFee);
                 clearFile();
                 try (FileWriter fileAccount = new FileWriter(path, true)) {
-                    for (Account account1 : accounts) {
+                    for (Account account1 : bankAccounts) {
                         fileAccount.write(account1.toString() + "\n");
                     }
                 } catch (IOException e) {
@@ -150,7 +184,9 @@ public class Bank {
                 break;
             }
         }
+        return true;
     }
+
 
     private void clearFile() {
         File directory = new File(String.valueOf(path));
