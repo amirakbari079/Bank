@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class Bank {
     String name, bankStartNumber;
@@ -68,8 +65,6 @@ public class Bank {
     }
 
 
-
-
     public void initAccounts() {
         File directory = new File("allAccount.txt");
         String data;
@@ -85,7 +80,7 @@ public class Bank {
             bankAccounts.add(AccountManger.stringToObject(data));
 
         }
-        System.out.println("a");
+
     }
 
     public void loadAllAccount() throws FileNotFoundException {
@@ -114,8 +109,8 @@ public class Bank {
 
     Account currentAccount;
 
-    public void moneyTransfer(HashMap<String ,Bank> banks, Bank destinationBank, String currentUser, String destinationCard, Integer amount) {
-        if (isAccountExist(banks,destinationCard)) {
+    public void moneyTransfer(HashMap<String, Bank> banks, Bank destinationBank, String currentUser, String destinationCard, Integer amount) {
+        if (isAccountExist(banks, destinationCard)) {
             if (moneyTransferOriginBank(amount, currentUser))
                 destinationBank.moneyTransferDestinationBank(destinationCard, amount);
         } else System.out.println("The desired card number does not exist");
@@ -123,22 +118,22 @@ public class Bank {
 
     int index;
 
-    private Boolean isAccountExist(HashMap<String ,Bank> banks,String destinationCard) {
-        int startNumber=Integer.parseInt(destinationCard.substring(0,4));
-        banks.forEach((key,value)->{
-            if (value.bankStartNumber.equals(startNumber)){
-                //do something
-                System.out.println("hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+    private Boolean isAccountExist(HashMap<String, Bank> banks, String destinationCard) {
+        int startNumber = Integer.parseInt(destinationCard.substring(0, 4));
+
+        for (Map.Entry<String, Bank> entry : banks.entrySet()) {
+            if (entry.getValue().bankStartNumber.equals(destinationCard.substring(0, 4))) {
+                for (Account account : entry.getValue().bankAccounts)
+                    if (account.accountNumber.equals(destinationCard)) {
+                        return true;
+                    }
             }
-        });
-//        for (Account destAccount : allAccount) {
-//            if (destAccount.accountNumber.equals(destinationCard)) {
-//                index = allAccount.indexOf(destAccount);
-//                return true;
-//            }
-//        }
+
+        }
+
         return false;
     }
+    
 
     public void moneyTransferDestinationBank(String destinationCard, Integer amount) {
         clearFile();
