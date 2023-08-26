@@ -36,7 +36,7 @@ public class Bank {
 
     public void openNewAccount(String userName, Integer accountBalance, String accountType) {
         Random randomNumber = new Random();
-        String cardNumber = bankStartNumber + Integer.toString(randomNumber.nextInt(99999999));
+        String cardNumber = bankStartNumber + randomNumber.nextInt(99999999);
         Account newAccount = null;
         switch (accountType) {
             case "1": {
@@ -120,7 +120,6 @@ public class Bank {
 
     private Boolean isAccountExist(HashMap<String, Bank> banks, String destinationCard) {
         int startNumber = Integer.parseInt(destinationCard.substring(0, 4));
-
         for (Map.Entry<String, Bank> entry : banks.entrySet()) {
             if (entry.getValue().bankStartNumber.equals(destinationCard.substring(0, 4))) {
                 for (Account account : entry.getValue().bankAccounts)
@@ -133,7 +132,17 @@ public class Bank {
 
         return false;
     }
-    
+
+    Bank destinationBank = null;
+
+    public Bank findDestinationAccount(String destinationCard, HashMap<String, Bank> banks) {
+        for (Map.Entry<String, Bank> entry : banks.entrySet()) {
+            if (entry.getValue().bankStartNumber.equals(destinationCard.substring(0, 4)))
+                return destinationBank = entry.getValue();
+        }
+        return null;
+    }
+
 
     public void moneyTransferDestinationBank(String destinationCard, Integer amount) {
         clearFile();
@@ -154,7 +163,7 @@ public class Bank {
     }
 
     public Boolean moneyTransferOriginBank(Integer amount, String currentUser) {
-        int checkAmount = 0, index;
+        int checkAmount, index;
         for (Account account : bankAccounts) {
 
             if (account.userName.equals(currentUser)) {
@@ -182,10 +191,27 @@ public class Bank {
         return true;
     }
 
+    //    Customer customer=new Customer();
+
+    public Account findAccountsOfCurrentUser(String userName) {
+        for (Account account : bankAccounts) {
+            if (account.userName.equals(userName)) {
+                return account;
+            }
+        }
+        return null;
+    }
+
+
+
+//    public void accountBalance(userName){
+//
+//    }
+
 
     private void clearFile() {
         File directory = new File(String.valueOf(path));
-        FileWriter clear = null;
+        FileWriter clear;
         try {
             clear = new FileWriter(directory, false);
             clear.flush();

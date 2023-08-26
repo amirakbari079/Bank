@@ -7,7 +7,7 @@ import java.io.IOException;
 public class Main {
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         String file = "allAccount.txt";
         clearFile(file);
         Menu menu = new Menu();

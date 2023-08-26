@@ -41,18 +41,18 @@ public class UserManagement {
         }
     }
 
-    public Boolean login(String inputUserName, String inputPassword) {
+    public Customer login(String inputUserName, String inputPassword) {
         HashMap<String, Customer> allUser = getAllUser();
         if (allUser.containsKey(inputUserName)) {
             Customer user = allUser.get(inputUserName);
             if (user.password.equals(inputPassword)) {
-                System.out.println(user.name + " Wellcome to your app");
-                return true;
+                System.out.println(user.name + " Welcome to your app");
+                return user;
             } else {
-                return false;
+                return null;
             }
         } else {
-            return false;
+            return null;
         }
     }
 

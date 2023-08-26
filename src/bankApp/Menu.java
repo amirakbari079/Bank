@@ -1,20 +1,14 @@
 package bankApp;
-
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Menu {
     Scanner scanner = new Scanner(System.in);
     String inputUserName;
     UserManagement userManagement = new UserManagement();
-    BanksInitialization banInit = new BanksInitialization();
+    BanksInitialization bankInit = new BanksInitialization();
     HashMap<String, Bank> banks;
-    File directory = new File("C:\\Users\\user\\IdeaProjects\\Bank\\allAccount.txt");
-
     public void firstMenu() {
 
 
@@ -45,6 +39,8 @@ public class Menu {
         }
     }
 
+    public Customer currentUser;
+
     public void loginMenu() {
 
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
@@ -52,9 +48,10 @@ public class Menu {
         inputUserName = scanner.nextLine();
         System.out.print("Please Enter Your password: ");
         String inputPassword = scanner.nextLine();
-        if (userManagement.login(inputUserName, inputPassword))
-            accountMenu(inputUserName);
-        else {
+        currentUser = userManagement.login(inputUserName, inputPassword);
+        if (currentUser != null) {
+            accountMenu();
+        } else {
             System.out.println("Wrong userName or Password. Try again");
             loginMenu();
         }
@@ -79,8 +76,8 @@ public class Menu {
         userManagement.signUp(userFirstName, userLastName, userName, userInputNationalID, userGender, userInputPassword);
     }
 
-    public void accountMenu(String userName) {
-        banks = banInit.run();
+    public void accountMenu() {
+        banks = bankInit.run();
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         System.out.println("1-Open a new account");
         System.out.println("2-Money transfer");
@@ -92,10 +89,10 @@ public class Menu {
                 openNewAccount();
                 break;
             case "2":
-                moneyTransfer(userName);
+                moneyTransfer();
                 break;
             case "3":
-                accountBalance(userName);
+                accountBalance();
                 break;
         }
 
@@ -113,8 +110,8 @@ public class Menu {
         }
         System.out.print("Enter Your Choice: ");
         Bank selectedBank = null;
-        int index=Integer.parseInt(scanner.next());
-        selectedBank=banks.get(bankHolder.get(index-1));
+        int index = Integer.parseInt(scanner.next());
+        selectedBank = banks.get(bankHolder.get(index - 1));
 
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         System.out.print("Enter your initial deposit :");
@@ -131,85 +128,91 @@ public class Menu {
     Bank destinationBank = null;
     String bankName;
 
-    public void moneyTransfer(String userName) {
+    public void moneyTransfer() {
         System.out.println("---*-*-*-*-*-*-*-*-*-*-*---");
         Bank selectedBank = null;
         String destinationCard;
-        Integer amount;
-        accountListHandler(userName);
+        int amount;
+        accountListHandler();
+
         selectedBank = banks.get(bankName);
         System.out.print("Enter destination card: ");
         destinationCard = scanner.next();
-        findDestinationAccount(destinationCard);
+        destinationBank = selectedBank.findDestinationAccount(destinationCard, banks);
         System.out.print("Enter amount: ");
         amount = Integer.parseInt(scanner.next());
-        selectedBank.moneyTransfer(banks,destinationBank,userName,destinationCard,amount);
+        selectedBank.moneyTransfer(banks, destinationBank, currentUser.userName, destinationCard, amount);
     }
 
-    public void findDestinationAccount(String destinationCard) {
-        for (Map.Entry<String, Bank> entry : banks.entrySet()) {
-            if (entry.getValue().bankStartNumber.equals(destinationCard.substring(0, 4)))
-                destinationBank = entry.getValue();
-        }
-
-    }
+//    public void findDestinationBank(String destinationCard) {
+//        for (Map.Entry<String, Bank> entry : banks.entrySet()) {
+//            if (entry.getValue().bankStartNumber.equals(destinationCard.substring(0, 4)))
+//                destinationBank = entry.getValue();
+//        }
+//
+//    }
 
     ArrayList<String> accountsOfUser = new ArrayList<>();
-    String cardNumber;
+    Account selectedAccount;
 
-    /**
-     * @param userName this method shows accounts of the user and then get the account that user want to do something with it
-     */
-    public void accountListHandler(String userName) {
-        findAccount(userName);
-        int counter = 0;
+    public void accountListHandler() {
+        currentUser.getAllAccounts(banks, currentUser);
+//        findAccountsOfUser(userName);
         System.out.println("Select your bank account :");
-        for (String account : accountsOfUser) {
-            counter++;
-            System.out.println(counter + "-" + account);
+        for (int i = 0; i < currentUser.accountsOfUser.size(); i++) {
+            System.out.println(i + 1 + "-" + currentUser.accountsOfUser.get(i));
         }
+
         System.out.print("Enter Your Choice: ");
-        int index;
-        String data = accountsOfUser.get(Integer.parseInt(scanner.next()) - 1);
-        index = data.indexOf(" ");
-        bankName = data.substring(index + 1);
-        cardNumber = data.substring(0, index - 1);
+        int index = Integer.parseInt(scanner.next()) - 1;
+        selectedAccount = currentUser.accountsOfUser.get(index);
+        bankName = selectedAccount.bankName;
+
+//        int counter = 0;
+//        for (String account : accountsOfUser) {
+//            counter++;
+//        }
+//        int index;
+//        String data = accountsOfUser.get(Integer.parseInt(scanner.next()) - 1);
+//        index = data.indexOf(" ");
+//        cardNumber = data.substring(0, index - 1);
     }
 
 
-    public void findAccount(String userName) {
-        Scanner fileReader = null;
-        try {
-            fileReader = new Scanner(directory);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+//    public void findAccountsOfUser(String userName) {
+//        Scanner fileReader = null;
+//        try {
+//            fileReader = new Scanner(directory);
+//        } catch (FileNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        while (fileReader.hasNextLine()) {
+//            String data = fileReader.nextLine();
+//            if (data.contains(userName)) {
+//                String[] splitData = data.split(" ");
+//                accountsOfUser.add(splitData[1] + " " + splitData[3]);
+//            }
+//        }
+//    }
 
-        while (fileReader.hasNextLine()) {
-            String data = fileReader.nextLine();
-            if (data.contains(userName)) {
-                String[] splitData = data.split(" ");
-                accountsOfUser.add(splitData[1] + " " + splitData[3]);
-            }
-        }
-    }
+    public void accountBalance() {
+        accountListHandler();
 
-    public void accountBalance(String userName) {
-        accountListHandler(userName);
 
-        Scanner fileReader = null;
-        try {
-            fileReader = new Scanner(directory);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        while (fileReader.hasNextLine()) {
-            String data = fileReader.nextLine();
-            if (data.contains(cardNumber)) {
-                String[] splitData = data.split(" ");
-                System.out.println("Your account balance is: " + splitData[2]);
-            }
-        }
+//        Scanner fileReader = null;
+//        try {
+//            fileReader = new Scanner(directory);
+//        } catch (FileNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+//        while (fileReader.hasNextLine()) {
+//            String data = fileReader.nextLine();
+//            if (data.contains(selectedAccount.accountNumber)) {
+//                String[] splitData = data.split(" ");
+//                System.out.println("Your account balance is: " + splitData[2]);
+//            }
+//        }
     }
 
 }
